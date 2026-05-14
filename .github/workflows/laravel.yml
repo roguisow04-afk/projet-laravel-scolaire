@@ -1,0 +1,28 @@
+name: Laravel CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v3
+
+      - name: Installer PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+
+      - name: Installer les dépendances
+        run: composer install
+
+      - name: Copier le .env
+        run: cp .env.example .env
+
+      - name: Générer la clé
+        run: php artisan key:generate
+
+      - name: Lancer les tests
+        run: php artisan test
