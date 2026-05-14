@@ -1,28 +1,35 @@
-name: Laravel CI
+name: CI Scolaire Laravel
 
-on: [push]
+on:
+  push:
+    branches: [ "main", "master" ]
 
 jobs:
-  build:
+  tests:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Récupérer le code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Installer PHP
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.2
+          extensions: mbstring, dom, curl, libxml, mysql, sqlite3
 
-      - name: Installer les dépendances
-        run: composer install
+      - name: Install Dependencies
+        run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
-      - name: Copier le .env
-        run: cp .env.example .env
-
-      - name: Générer la clé
-        run: php artisan key:generate
-
-      - name: Lancer les tests
-        run: php artisan test
+      - name: Prepare Environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          mkdir -p database
+          touch database/database.sqlite
+      - name: Run Tests
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: database/database.sqlite
+        run: |
+          php artisan migrate --force
+          php artisan test
